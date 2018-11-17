@@ -1,0 +1,42 @@
+
+version: '3'
+services:
+    couchb:
+        image: couchbase/server:sandbox
+        container_name: couchb
+        networks:
+                sunshine_net:
+                        ipv4_address: 10.10.10.10
+#                        aliases:
+#                                - db
+
+        tty: true
+        stdin_open: true
+        restart: always
+        volumes:
+            - /opt/sunshine/couchbase/var:/opt/couchbase/var 
+        ports:
+            - 8091-8096:8091-8096 
+            - 11210-11211:11210-11211
+
+    webapp:
+        image: sunshine:webapp
+        container_name: webapp
+#        build: docker
+        networks:
+                sunshine_net:
+                        ipv4_address: 10.10.10.20
+#                        aliases:
+#                                - webapp
+        ports:
+            - 8080:8080
+        depends_on:
+            - couchb
+
+networks:
+    sunshine_net:
+        driver: bridge
+        ipam:
+            driver: default
+            config: [{subnet: 10.10.10.0/24}]
+
