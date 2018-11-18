@@ -1,0 +1,75 @@
+
+version: '3'
+services:
+# docker run --name couchb -ti -v c:/opt/couchbase/var:/opt/couchbase/var -p  8091-8096:8091-8096 -p 11210-11211:11210-11211 couchbase/server:sandbox
+# --network=sunshine_net
+
+#docker network create sunshine_net
+#docker network create --subnet 10.10.10.0/24 sunshine_net
+#docker network connect --alias db --alias couchb sunshine_net couchb
+#Connect a container to a network when it starts
+# --network=<network-name>
+#docker network inspect
+# docker network inspect simple-network
+#[
+#    {
+#        "Name": "simple-network",
+#        "Id": "69568e6336d8c96bbf57869030919f7c69524f71183b44d80948bd3927c87f6a",
+#        "Scope": "local",
+#        "Driver": "bridge",
+#        "IPAM": {
+#            "Driver": "default",
+#            "Config": [
+#                {
+#                    "Subnet": "172.22.0.0/16",
+#                    "Gateway": "172.22.0.1"
+#                }
+#            ]
+#        },
+#        "Containers": {},
+#        "Options": {},
+#        "Labels": {}
+#    }
+#]
+
+
+
+    couchb:
+        image: couchbase/server:sandbox
+        container_name: couchb
+        networks:
+                sunshine_net:
+                        ipv4_address: 10.10.10.10
+#                        aliases:
+#                                - db
+
+        tty: true
+        stdin_open: true
+        restart: always
+        volumes:
+            - c:\opt\couchbase\var:/opt/couchbase/var 
+        ports:
+            - 8091-8096:8091-8096 
+            - 11210-11211:11210-11211
+
+    webapp:
+        image: sunshine:webapp
+        container_name: webapp
+#        build: docker
+        networks:
+                sunshine_net:
+                        ipv4_address: 10.10.10.20
+#                        aliases:
+#                                - webapp
+        ports:
+            - 8080:8080
+        depends_on:
+            - couchb
+
+networks:
+    sunshine_net:
+        driver: bridge
+        ipam:
+            driver: default
+            config: [{subnet: 10.10.10.0/24}]
+
